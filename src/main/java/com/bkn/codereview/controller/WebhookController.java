@@ -3,7 +3,6 @@ package com.bkn.codereview.controller;
 import com.bkn.codereview.analysis.CodeAnalysisService;
 import com.bkn.codereview.github.GithubService;
 import com.bkn.codereview.vo.CodeReviewRequestVO;
-import com.bkn.codereview.vo.PullResponseVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +30,8 @@ public class WebhookController {
             List<CodeReviewRequestVO> codeReviewRequestVOList = githubService.extractCodeReviewData(payload);
             // Open AI 코드리뷰 요청
             Map<String, String> aiReview = codeAnalysisService.requestCodeReview(codeReviewRequestVOList);
-
-            for (Map.Entry<String, String> entry : aiReview.entrySet()) {
-                System.out.println(entry.getKey() + " ::: " + entry.getValue());
-            }
+            // 코드리뷰 PR 코멘트 달기
+            githubService.postPrComment(aiReview);
         }
         return ResponseEntity.ok("Webhook received");
     }

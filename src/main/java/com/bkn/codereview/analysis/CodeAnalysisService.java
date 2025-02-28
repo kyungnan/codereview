@@ -1,6 +1,8 @@
 package com.bkn.codereview.analysis;
 
 import com.bkn.codereview.vo.CodeReviewRequestVO;
+import com.bkn.codereview.vo.CodeReviewResponseVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class CodeAnalysisService {
     private final WebClient webClient;
@@ -28,7 +31,6 @@ public class CodeAnalysisService {
 
             String response = this.webClient.post()
                     .uri("/v1/chat/completions")
-
                     .bodyValue("""
                                 {
                                   "model": "gpt-4",
@@ -39,7 +41,8 @@ public class CodeAnalysisService {
                                 }
                             """.formatted(prompt))
                     .retrieve()
-                    .bodyToMono(String.class)
+                    .bodyToMono(CodeReviewResponseVO.class)  // VO로 변환
+                    .map(CodeReviewResponseVO::getReviewContent) // 코드 리뷰 결과 content만 추출
                     .block();
 
             map.put(codeReviewRequestVO.getFilaName(), response);

@@ -18,6 +18,8 @@ import java.util.Map;
 @Slf4j
 public class GithubService {
     private final GithubClient githubClient;
+    private String repo;
+    private int pullNumber;
 
     /**
      * 테스트용
@@ -64,11 +66,16 @@ public class GithubService {
         return head.get("ref").toString();
     }
 
+    /**
+     * 코드리뷰에 필요한 Request 정보 추출
+     * @param payload
+     * @return
+     */
     public List<CodeReviewRequestVO> extractCodeReviewData(Map payload) {
         // payload에서 필요한 정보 추출
         String prUrl = (String) ((Map<?, ?>) payload.get("pull_request")).get("url");
-        String repo = (String) ((Map<?, ?>) payload.get("repository")).get("full_name");
-        int pullNumber = Integer.parseInt(payload.get("number").toString());
+        repo = (String) ((Map<?, ?>) payload.get("repository")).get("full_name");
+        pullNumber = Integer.parseInt(payload.get("number").toString());
 
         // 브랜치명 가져오기
         String branchName = this.getBranchName(prUrl);
@@ -87,5 +94,16 @@ public class GithubService {
                     .build());
         }
         return codeReviewRequestVOList;
+    }
+
+    /**
+     * 코드리뷰 결과를 PR에 코멘트 남기기
+     * @param codeReviewMap
+     */
+    public void postPrComment(Map codeReviewMap) {
+        codeReviewMap.forEach((filename, review) -> {
+            String codeReview = String.format("### 파일명: `%s`\n\n%s", filename, review);
+            githubClient.postPrComment(repo, pullNumber, codeReview);
+        });
     }
 }

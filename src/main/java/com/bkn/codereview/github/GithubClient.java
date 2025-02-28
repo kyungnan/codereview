@@ -118,4 +118,20 @@ public class GithubClient {
                 .bodyToMono(Map.class)
                 .block();
     }
+
+    /**
+     * 코드리뷰 결과를 PR에 코멘트 남기기
+     * @param repo
+     * @param pullNumber
+     * @param codeReview
+     */
+    public void postPrComment(String repo, int pullNumber, String codeReview) {
+        // /repos/{owner}/{repo}/issues/{pull_number}/comments
+        this.webClient.post()
+                .uri(String.format("/repos/%s/issues/%d/comments", repo, pullNumber))
+                .bodyValue(Map.of("body", codeReview)) // PR 코멘트 내용
+                .retrieve()
+                .bodyToMono(Void.class)
+                .subscribe(response -> log.info("[GithubClient.postPrComment] PR comment success."));
+    }
 }
