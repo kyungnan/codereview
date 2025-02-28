@@ -1,5 +1,6 @@
 package com.bkn.codereview.github;
 
+import com.bkn.codereview.vo.CodeReviewRequestVO;
 import com.bkn.codereview.vo.ContentVO;
 import com.bkn.codereview.vo.PullResponseVO;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -60,5 +62,30 @@ public class GithubService {
         Map map = githubClient.getBranchName(prUrl);
         Map head = (Map) map.get("head");
         return head.get("ref").toString();
+    }
+
+    public List<CodeReviewRequestVO> extractCodeReviewData(Map payload) {
+        // payload에서 필요한 정보 추출
+        String prUrl = (String) ((Map<?, ?>) payload.get("pull_request")).get("url");
+        String repo = (String) ((Map<?, ?>) payload.get("repository")).get("full_name");
+        int pullNumber = Integer.parseInt(payload.get("number").toString());
+
+        // 브랜치명 가져오기
+        String branchName = this.getBranchName(prUrl);
+        // PR 코드 가져오기 (oring & change)
+        List<CodeReviewRequestVO> codeReviewRequestVOList = new ArrayList<>();
+        List<PullResponseVO> changedJavaFiles = this.getChangedJavaFiles(repo, pullNumber);
+        for (PullResponseVO changedFile : changedJavaFiles) {
+            String changedCode = this.getContentCode(repo, changedFile.getFilename(), branchName);
+            String originCode = this.getContentCode(repo, changedFile.getFilename(), "master");
+            codeReviewRequestVOList.add(CodeReviewRequestVO.builder()
+                    .filaName(changedFile.filename)
+                    .patch(changedFile.patch)
+                    .status(changedFile.status)
+                    .originCode(originCode)
+                    .changedCode(changedCode)
+                    .build());
+        }
+        return codeReviewRequestVOList;
     }
 }

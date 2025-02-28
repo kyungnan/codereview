@@ -27,6 +27,7 @@ public class GithubClient {
         this.webClient = WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("Authorization", "Bearer " + GITHUB_TOKEN)
                 .build();
     }
 
@@ -48,7 +49,6 @@ public class GithubClient {
             String response = this.webClient
                     .get()
                     .uri(userUrl)
-                    .header("Authorization", "Bearer " + GITHUB_TOKEN)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
@@ -101,7 +101,6 @@ public class GithubClient {
                         .path(String.format("/repos/%s/contents/%s", repo, fileName))
                         .queryParam("ref", branchName)
                         .build())
-                .header("Authorization", "Bearer " + GITHUB_TOKEN)
                 .retrieve()
                 .bodyToMono(ContentVO.class)
                 .block();
@@ -115,7 +114,6 @@ public class GithubClient {
     public Map getBranchName(String prUrl) {
         return this.webClient.get()
                 .uri(prUrl.replace(baseUrl, ""))
-                .header("Authorization", "Bearer " + GITHUB_TOKEN)
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block();
