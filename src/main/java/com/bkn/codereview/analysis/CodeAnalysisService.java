@@ -3,6 +3,7 @@ package com.bkn.codereview.analysis;
 import com.bkn.codereview.vo.CodeReviewRequestVO;
 import com.bkn.codereview.vo.CodeReviewResponseVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,8 @@ import java.util.Map;
 @Service
 public class CodeAnalysisService {
     private final WebClient webClient;
-    private String AI_TOKEN = "";
+    @Value("${openai.api-key}")
+    private String AI_TOKEN;
     public CodeAnalysisService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder
                 .baseUrl("https://api.openai.com")

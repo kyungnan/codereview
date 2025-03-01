@@ -4,6 +4,7 @@ import com.bkn.codereview.vo.ContentVO;
 import com.bkn.codereview.vo.PullResponseVO;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,8 @@ public class GithubClient {
     private WebClient webClient;
     private String baseUrl = "https://api.github.com";
     private String userUrl = "/user";
-    private String GITHUB_TOKEN = "";
+    @Value("${github.token}")
+    private String GITHUB_TOKEN;
 
     @PostConstruct
     private void init() {

@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: codereview
+
+github:
+  token: ${GITHUB_TOKEN:}
+
+openai:
+  api-key: ${OPENAI_API_KEY:}
+
+slack:
+  webhook-url: ${SLACK_WEBHOOK_URL:}

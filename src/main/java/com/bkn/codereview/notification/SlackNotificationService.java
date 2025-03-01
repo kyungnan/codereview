@@ -1,5 +1,6 @@
 package com.bkn.codereview.notification;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -10,11 +11,12 @@ import java.util.Map;
 @Service
 public class SlackNotificationService {
     private final WebClient webClient;
+    @Value("${slack.webhook-url}")
+    private String SLACK_WEBHOOK_URL;
 
     public SlackNotificationService(WebClient.Builder webClientBuilder) {
-        //https://hooks.slack.com/services/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
         this.webClient = webClientBuilder
-                .baseUrl("https://hooks.slack.com/services/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")
+                .baseUrl(SLACK_WEBHOOK_URL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
