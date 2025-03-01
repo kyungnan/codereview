@@ -2,6 +2,7 @@ package com.bkn.codereview.controller;
 
 import com.bkn.codereview.analysis.CodeAnalysisService;
 import com.bkn.codereview.github.GithubService;
+import com.bkn.codereview.notification.SlackNotificationService;
 import com.bkn.codereview.vo.CodeReviewRequestVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import java.util.Map;
 public class WebhookController {
     private final GithubService githubService;
     private final CodeAnalysisService codeAnalysisService;
+    private final SlackNotificationService slackNotificationService;
 
     @PostMapping
     public ResponseEntity<String> handleWebhook(@RequestBody Map payload) {
@@ -32,6 +34,8 @@ public class WebhookController {
             Map<String, String> aiReview = codeAnalysisService.requestCodeReview(codeReviewRequestVOList);
             // 코드리뷰 PR 코멘트 달기
             githubService.postPrComment(aiReview);
+            // Slack notification
+            slackNotificationService.notifyToSlack(aiReview);
         }
         return ResponseEntity.ok("Webhook received");
     }
