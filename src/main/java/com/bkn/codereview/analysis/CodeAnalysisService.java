@@ -26,14 +26,26 @@ public class CodeAnalysisService {
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + AI_TOKEN)
                 .build();
     }
-    public Map requestCodeReview(List<CodeReviewRequestVO> CodeReviewRequestVOList) {
-        Map map = new HashMap();
-        for (CodeReviewRequestVO codeReviewRequestVO : CodeReviewRequestVOList) {
-            String prompt = this.buildPrompt(codeReviewRequestVO);
 
-            String response = this.webClient.post()
-                    .uri("/v1/chat/completions")
-                    .bodyValue("""
+    public Map requestCodeReview(List<CodeReviewRequestVO> CodeReviewRequestVOList) {
+        for (CodeReviewRequestVO codeReviewRequestVO : CodeReviewRequestVOList) {
+            return this.requestCodeReview(codeReviewRequestVO);
+        }
+        return null;
+    }
+
+    /**
+     * AI 코드리뷰 요청
+     * @param codeReviewRequestVO
+     * @return
+     */
+    private Map requestCodeReview(CodeReviewRequestVO codeReviewRequestVO) {
+        Map map = new HashMap();
+        String prompt = this.buildPrompt(codeReviewRequestVO);
+
+        String response = this.webClient.post()
+                .uri("/v1/chat/completions")
+                .bodyValue("""
                                 {
                                   "model": "gpt-4",
                                   "messages": [
@@ -42,17 +54,21 @@ public class CodeAnalysisService {
                                   ]
                                 }
                             """.formatted(prompt))
-                    .retrieve()
-                    .bodyToMono(CodeReviewResponseVO.class)  // VO로 변환
-                    .map(CodeReviewResponseVO::getReviewContent) // 코드 리뷰 결과 content만 추출
-                    .block();
+                .retrieve()
+                .bodyToMono(CodeReviewResponseVO.class)  // VO로 변환
+                .map(CodeReviewResponseVO::getReviewContent) // 코드 리뷰 결과 content만 추출
+                .block();
 
-            map.put(codeReviewRequestVO.getFilaName(), response);
-        }
+        map.put(codeReviewRequestVO.getFilaName(), response);
 
         return map;
     }
 
+    /**
+     * 리뷰 요청 시 prompt 생성
+     * @param codeReviewRequestVO
+     * @return
+     */
     private String buildPrompt(CodeReviewRequestVO codeReviewRequestVO) {
         return """
             Code Review 요청입니다.
